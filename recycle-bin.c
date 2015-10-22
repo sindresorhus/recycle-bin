@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+#include <assert.h>
 
 int wmain(int argc, wchar_t **argv) {
 	if (argc == 2) {
@@ -19,13 +20,13 @@ int wmain(int argc, wchar_t **argv) {
 		return 1;
 	}
 
-	size_t len = argc + 1;
+	size_t len = argc;
 
 	for (int i = 1; i < argc; i++) {
 		len += wcslen(argv[i]);
 	}
 
-	wchar_t *from = (wchar_t*)malloc(len * sizeof(wchar_t));
+	wchar_t *from = malloc(len * sizeof(wchar_t));
 
 	int pos = 0;
 
@@ -34,7 +35,9 @@ int wmain(int argc, wchar_t **argv) {
 		pos += wcslen(argv[i]) + 1;
 	}
 
-	from[len - 1] = '\0';
+	from[pos] = '\0';
+
+	assert(++pos == len && "position/length mismatch");
 
 	SHFILEOPSTRUCTW op;
 
