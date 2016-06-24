@@ -20,9 +20,10 @@ int wmain(int argc, wchar_t **argv) {
 		return 1;
 	}
 
+	int i;
 	size_t len = argc;
 
-	for (int i = 1; i < argc; i++) {
+	for (i = 1; i < argc; i++) {
 		len += wcslen(argv[i]);
 	}
 
@@ -30,7 +31,7 @@ int wmain(int argc, wchar_t **argv) {
 
 	int pos = 0;
 
-	for (int i = 1; i < argc; i++) {
+	for (i = 1; i < argc; i++) {
 		wcscpy(&from[pos], argv[i]);
 		pos += wcslen(argv[i]) + 1;
 	}
