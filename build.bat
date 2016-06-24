@@ -2,4 +2,4 @@
 
 set filename=recycle-bin
 
-gcc "%filename%".c -municode -O2 -s -o "%filename%".exe
+gcc "%filename%".c -municode -O2 -s -o "%filename%".exe -std=c99
