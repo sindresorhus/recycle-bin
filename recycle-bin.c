@@ -70,16 +70,16 @@ int wmain(int argc, wchar_t **argv) {
 
 	for (int i = 0; i < count; i++) {
 		int len = GetFullPathName(files[i], 0, NULL, NULL);
-		wchar_t *buf = malloc((len + 1) * sizeof(wchar_t));
 
-		if (GetFullPathName(files[i], len, buf, NULL) == 0) {
+		if (len == 0) {
 			op->lpVtbl->Release(op);
 
-			return -1;
+			return 1;
 		}
 
-		IShellItem *item;
+		wchar_t *buf = malloc((len + 1) * sizeof(wchar_t));
 
+		GetFullPathName(files[i], len, buf, NULL);
 		list[i] = ILCreateFromPath(buf);
 
 		free(buf);
@@ -90,10 +90,6 @@ int wmain(int argc, wchar_t **argv) {
 	CHECK_OBJ(op, SHCreateShellItemArrayFromIDLists(count, list, &items));
 	CHECK_OBJ(op, op->lpVtbl->DeleteItems(op, (IUnknown*)items));
 	CHECK_OBJ(op, op->lpVtbl->PerformOperations(op));
-
-	for (int i = 0; i < count; i++) {
-		ILFree(list[i]);
-	}
 
 	return op->lpVtbl->Release(op);
 }
