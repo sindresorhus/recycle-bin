@@ -2,9 +2,9 @@
 #include <shlobj.h>
 
 HRESULT STDMETHODCALLTYPE QueryInterface(
-    IFileOperationProgressSink *this,
-    REFIID riid,
-    void **ppv
+	IFileOperationProgressSink *this,
+	REFIID riid,
+	void **ppv
 ) {
 	if (riid == &IID_IUnknown || riid == &IID_IFileOperationProgressSink) {
 		*ppv = this;
@@ -30,38 +30,38 @@ HRESULT STDMETHODCALLTYPE StartOperations(IFileOperationProgressSink *this) {
 }
 
 HRESULT STDMETHODCALLTYPE FinishOperations(
-    IFileOperationProgressSink *this,
-    HRESULT hrResult
+	IFileOperationProgressSink *this,
+	HRESULT hrResult
 ) {
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE PreRenameItem(
-    IFileOperationProgressSink *this,
-    DWORD dwFlags,
-    IShellItem *psiItem,
-    LPCWSTR pszNewName
+	IFileOperationProgressSink *this,
+	DWORD dwFlags,
+	IShellItem *psiItem,
+	LPCWSTR pszNewName
 ) {
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE PostRenameItem(
-    IFileOperationProgressSink *this,
-    DWORD dwFlags,
-    IShellItem *psiItem,
-    LPCWSTR pszNewName,
-    HRESULT hrRename,
-    IShellItem *psiNewlyCreated
+	IFileOperationProgressSink *this,
+	DWORD dwFlags,
+	IShellItem *psiItem,
+	LPCWSTR pszNewName,
+	HRESULT hrRename,
+	IShellItem *psiNewlyCreated
 ) {
 	return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE PreMoveItem(
-    IFileOperationProgressSink *this,
-    DWORD dwFlags,
-    IShellItem *psiItem,
-    IShellItem *psiDestinationFolder,
-    LPCWSTR pszNewNam
+	IFileOperationProgressSink *this,
+	DWORD dwFlags,
+	IShellItem *psiItem,
+	IShellItem *psiDestinationFolder,
+	LPCWSTR pszNewNam
 ) {
 	return S_OK;
 }
