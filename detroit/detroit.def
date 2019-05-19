@@ -1,0 +1,4 @@
+LIBRARY detroit.dll
+
+EXPORTS
+			DllGetClassObject	PRIVATE

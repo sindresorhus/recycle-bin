@@ -1,0 +1,97 @@
+// edge.idl : IDL source for edge
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (edge.tlb) and marshalling code.
+
+import "unknwn.idl";
+import "Shobjidl.idl";
+[object, uuid(C5F45CBC-4439-418C-A9F9-05AC67525E43)]
+interface IDetour : IFileOperationProgressSink
+{
+
+
+    HRESULT StartOperations();
+
+    HRESULT FinishOperations(
+        [in] HRESULT hrResult);
+
+    HRESULT PreRenameItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in, unique, string] LPCWSTR pszNewName);
+
+    HRESULT PostRenameItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in, string] LPCWSTR pszNewName,
+        [in] HRESULT hrRename,
+        [in] IShellItem *psiNewlyCreated);
+
+    HRESULT PreMoveItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName);
+
+    HRESULT PostMoveItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName,
+        [in] HRESULT hrMove,
+        [in] IShellItem *psiNewlyCreated);
+
+    HRESULT PreCopyItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName);
+
+    HRESULT PostCopyItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName,
+        [in] HRESULT hrCopy,
+        [in] IShellItem *psiNewlyCreated);
+
+    HRESULT PreDeleteItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem);
+
+    HRESULT PostDeleteItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiItem,
+        [in] HRESULT hrDelete,
+        [in] IShellItem *psiNewlyCreated);
+
+    HRESULT PreNewItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName);
+
+    HRESULT PostNewItem(
+        [in] DWORD dwFlags,
+        [in] IShellItem *psiDestinationFolder,
+        [in, unique, string] LPCWSTR pszNewName,
+        [in, unique, string] LPCWSTR pszTemplateName,
+        [in] DWORD dwFileAttributes,
+        [in] HRESULT hrNew,
+        [in] IShellItem *psiNewItem);
+
+    HRESULT UpdateProgress(
+        [in] UINT iWorkTotal,
+        [in] UINT iWorkSoFar);
+
+    HRESULT ResetTimer();
+
+    HRESULT PauseTimer();
+
+    HRESULT ResumeTimer();
+  HRESULT CreateUnit(
+    [in]  REFCLSID rclsid,
+    [in]  REFIID   riid,
+    [out, iid_is(riid), retval] LPVOID *ppUnk);
+}
+

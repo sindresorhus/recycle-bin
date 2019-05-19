@@ -7,24 +7,33 @@
 
 [Download](https://github.com/sindresorhus/recycle-bin/releases/latest) the binary and put it somewhere in your [`%path%`](http://stackoverflow.com/a/28778358/64949).
 
-
+...And see notes below  
 ## Usage
 
 ```
-$ recycle-bin --help
 
 Usage: recycle-bin <path> [...]
 ```
 
 
 ## Build
+you should have msvc  
 
-Install [`MinGW-w64`](http://sourceforge.net/projects/mingw-w64) and run:
-
-```
-$ build
-```
-
+- first : run `c.ps1` script from `\release`  
+in case of troubles run `Set-ExecutionPolicy -ExecutionPolicy Unrestricted` first.  
+to run a script use  
+`cd ` (drag `release` dir there)  
+`.\c`  
+windows powershell, admin priv's
+ - second : build both solutions .  
+ use `Win32 - Release` Conf or copy script to others folders and run there.
+  
+  
+  build done  
+  
+  
+  
+Anywhere use of binaries possible only after run of `c.ps1` . It should be located in same place with `.dll` 
 
 ## Related
 
