@@ -28,7 +28,7 @@ $ build
 
 ## Related
 
-- [empty-recycle-bin](https://github.com/sindresorhus/empty-trash) - Empty the Windows recycle bin
+- [empty-recycle-bin](https://github.com/sindresorhus/empty-recycle-bin) - Empty the Windows recycle bin
 - [trash](https://github.com/sindresorhus/trash) - Move files and folders to the trash - cross-platform
 - [empty-trash](https://github.com/sindresorhus/empty-trash) - Empty the trash - cross-platform
 
