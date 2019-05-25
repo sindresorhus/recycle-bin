@@ -36,7 +36,7 @@ int wmain(int argc, wchar_t **argv) {
 	int count = argc - 1;
 	wchar_t **files = argv + 1;
 
-	CHECK(CoInitializeEx(NULL, COINIT_MULTITHREADED));
+	CHECK(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE));
 
 	IFileOperation *op;
 
