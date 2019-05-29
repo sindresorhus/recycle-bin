@@ -20,7 +20,7 @@
 int wmain(int argc, wchar_t **argv) {
 	if (argc == 2) {
 		if (wcscmp(argv[1], L"--version") == 0) {
-			puts("1.0.1");
+			puts("2.0.0");
 			return 0;
 		}
 
