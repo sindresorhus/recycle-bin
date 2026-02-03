@@ -17,6 +17,42 @@
 	return result;\
 }
 
+// Resolve subst virtual drive paths to their real paths.
+// Without this, IFileOperation silently fails to recycle files on subst drives
+// because Windows has no Recycle Bin associated with virtual drives.
+static wchar_t *resolveSubstPath(const wchar_t *path) {
+	if (path[0] == L'\0' || path[1] != L':') {
+		return NULL;
+	}
+
+	wchar_t drive[3] = {path[0], L':', L'\0'};
+	wchar_t target[MAX_PATH];
+
+	DWORD length = QueryDosDeviceW(drive, target, MAX_PATH);
+
+	if (length == 0) {
+		return NULL;
+	}
+
+	// Subst drives have a target starting with "\??\".
+	// Regular drives return "\Device\..." instead.
+	if (wcsncmp(target, L"\\??\\", 4) != 0) {
+		return NULL;
+	}
+
+	const wchar_t *realPrefix = target + 4;
+	size_t prefixLength = wcslen(realPrefix);
+	const wchar_t *rest = path + 2; // Skip "X:"
+	size_t restLength = wcslen(rest);
+
+	wchar_t *resolved = malloc((prefixLength + restLength + 1) * sizeof(wchar_t));
+
+	wmemcpy(resolved, realPrefix, prefixLength);
+	wmemcpy(resolved + prefixLength, rest, restLength + 1);
+
+	return resolved;
+}
+
 int wmain(int argc, wchar_t **argv) {
 	if (argc == 2) {
 		if (wcscmp(argv[1], L"--version") == 0) {
@@ -83,7 +119,25 @@ int wmain(int argc, wchar_t **argv) {
 		wchar_t *buf = malloc((len + 1) * sizeof(wchar_t));
 
 		GetFullPathName(files[i], len, buf, NULL);
-		list[i] = ILCreateFromPath(buf);
+
+		// Resolve chained subst drives (e.g., Y: -> X: -> C:).
+		// We keep resolving until we reach a real (non-subst) drive.
+		wchar_t *current = buf;
+		wchar_t *resolved;
+
+		while ((resolved = resolveSubstPath(current)) != NULL) {
+			if (current != buf) {
+				free(current);
+			}
+
+			current = resolved;
+		}
+
+		list[i] = ILCreateFromPath(current);
+
+		if (current != buf) {
+			free(current);
+		}
 
 		free(buf);
 	}
