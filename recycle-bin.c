@@ -98,7 +98,7 @@ static void freeIdListArray(PCIDLIST_ABSOLUTE *list, int count) {
 int wmain(int argc, wchar_t **argv) {
 	if (argc == 2) {
 		if (wcscmp(argv[1], L"--version") == 0) {
-			puts("2.0.0");
+			puts("2.1.0");
 			return 0;
 		}
 
