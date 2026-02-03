@@ -9,12 +9,40 @@
 #include <initguid.h>
 #include <shlobj.h>
 
+static void printError(HRESULT hr) {
+	wchar_t *message = NULL;
+
+	DWORD length = FormatMessageW(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		hr,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPWSTR)&message,
+		0,
+		NULL
+	);
+
+	if (length > 0 && message != NULL) {
+		// Remove trailing newline if present.
+		while (length > 0 && (message[length - 1] == L'\n' || message[length - 1] == L'\r')) {
+			message[--length] = L'\0';
+		}
+
+		fwprintf(stderr, L"error: %ls\n", message);
+		LocalFree(message);
+	} else {
+		fwprintf(stderr, L"error: 0x%08lX\n", (unsigned long)hr);
+	}
+}
+
 #define CHECK(result) if (FAILED(result)) {\
-	return result;\
+	printError(result);\
+	return 1;\
 }
 #define CHECK_OBJ(obj, result) if (FAILED(result)) {\
+	printError(result);\
 	obj->lpVtbl->Release(obj);\
-	return result;\
+	return 1;\
 }
 
 // Resolve subst virtual drive paths to their real paths.
@@ -111,8 +139,8 @@ int wmain(int argc, wchar_t **argv) {
 		int len = GetFullPathName(files[i], 0, NULL, NULL);
 
 		if (len == 0) {
+			printError(HRESULT_FROM_WIN32(GetLastError()));
 			op->lpVtbl->Release(op);
-
 			return 1;
 		}
 
@@ -150,5 +178,14 @@ int wmain(int argc, wchar_t **argv) {
 	CHECK_OBJ(op, op->lpVtbl->DeleteItems(op, (IUnknown*)items));
 	CHECK_OBJ(op, op->lpVtbl->PerformOperations(op));
 
-	return op->lpVtbl->Release(op);
+	BOOL aborted = FALSE;
+	op->lpVtbl->GetAnyOperationsAborted(op, &aborted);
+	op->lpVtbl->Release(op);
+
+	if (aborted) {
+		fwprintf(stderr, L"error: operation was aborted\n");
+		return 1;
+	}
+
+	return 0;
 }
