@@ -81,6 +81,20 @@ static wchar_t *resolveSubstPath(const wchar_t *path) {
 	return resolved;
 }
 
+static void freeIdListArray(PCIDLIST_ABSOLUTE *list, int count) {
+	if (list == NULL) {
+		return;
+	}
+
+	for (int i = 0; i < count; i++) {
+		if (list[i] != NULL) {
+			ILFree((PIDLIST_ABSOLUTE)list[i]);
+		}
+	}
+
+	free(list);
+}
+
 int wmain(int argc, wchar_t **argv) {
 	if (argc == 2) {
 		if (wcscmp(argv[1], L"--version") == 0) {
@@ -133,20 +147,40 @@ int wmain(int argc, wchar_t **argv) {
 		));
 	}
 
-	PCIDLIST_ABSOLUTE list[count];
+	PCIDLIST_ABSOLUTE *list = calloc((size_t)count, sizeof(*list));
+
+	if (list == NULL) {
+		printError(E_OUTOFMEMORY);
+		op->lpVtbl->Release(op);
+		return 1;
+	}
+
+	IShellItemArray *items = NULL;
+	int exitCode = 0;
 
 	for (int i = 0; i < count; i++) {
 		int len = GetFullPathName(files[i], 0, NULL, NULL);
 
 		if (len == 0) {
 			printError(HRESULT_FROM_WIN32(GetLastError()));
-			op->lpVtbl->Release(op);
-			return 1;
+			exitCode = 1;
+			goto cleanup;
 		}
 
 		wchar_t *buf = malloc((len + 1) * sizeof(wchar_t));
 
-		GetFullPathName(files[i], len, buf, NULL);
+		if (buf == NULL) {
+			printError(E_OUTOFMEMORY);
+			exitCode = 1;
+			goto cleanup;
+		}
+
+		if (GetFullPathName(files[i], len, buf, NULL) == 0) {
+			printError(HRESULT_FROM_WIN32(GetLastError()));
+			free(buf);
+			exitCode = 1;
+			goto cleanup;
+		}
 
 		// Resolve chained subst drives (e.g., Y: -> X: -> C:).
 		// We keep resolving until we reach a real (non-subst) drive.
@@ -163,6 +197,17 @@ int wmain(int argc, wchar_t **argv) {
 
 		list[i] = ILCreateFromPath(current);
 
+		if (list[i] == NULL) {
+			printError(HRESULT_FROM_WIN32(GetLastError()));
+			if (current != buf) {
+				free(current);
+			}
+
+			free(buf);
+			exitCode = 1;
+			goto cleanup;
+		}
+
 		if (current != buf) {
 			free(current);
 		}
@@ -170,22 +215,53 @@ int wmain(int argc, wchar_t **argv) {
 		free(buf);
 	}
 
-	IShellItemArray *items;
 	DWORD cookie;
+	HRESULT result = SHCreateShellItemArrayFromIDLists(count, list, &items);
 
-	CHECK_OBJ(op, SHCreateShellItemArrayFromIDLists(count, list, &items));
-	CHECK_OBJ(op, op->lpVtbl->Advise(op, &progressSink, &cookie));
-	CHECK_OBJ(op, op->lpVtbl->DeleteItems(op, (IUnknown*)items));
-	CHECK_OBJ(op, op->lpVtbl->PerformOperations(op));
+	if (FAILED(result)) {
+		printError(result);
+		exitCode = 1;
+		goto cleanup;
+	}
+
+	result = op->lpVtbl->Advise(op, &progressSink, &cookie);
+
+	if (FAILED(result)) {
+		printError(result);
+		exitCode = 1;
+		goto cleanup;
+	}
+
+	result = op->lpVtbl->DeleteItems(op, (IUnknown*)items);
+
+	if (FAILED(result)) {
+		printError(result);
+		exitCode = 1;
+		goto cleanup;
+	}
+
+	result = op->lpVtbl->PerformOperations(op);
+
+	if (FAILED(result)) {
+		printError(result);
+		exitCode = 1;
+		goto cleanup;
+	}
 
 	BOOL aborted = FALSE;
 	op->lpVtbl->GetAnyOperationsAborted(op, &aborted);
-	op->lpVtbl->Release(op);
 
 	if (aborted) {
 		fwprintf(stderr, L"error: operation was aborted\n");
-		return 1;
+		exitCode = 1;
 	}
 
-	return 0;
+cleanup:
+	if (items != NULL) {
+		items->lpVtbl->Release(items);
+	}
+
+	op->lpVtbl->Release(op);
+	freeIdListArray(list, count);
+	return exitCode;
 }

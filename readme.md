@@ -16,10 +16,10 @@ Usage: recycle-bin <path> [...]
 
 ## Build
 
-Install [`MinGW-w64`](https://sourceforge.net/projects/mingw-w64/) and run:
+Install the Visual Studio C++ build tools and run:
 
 ```
-$ build
+$ build-msvc x86_64
 ```
 
 ## Related
