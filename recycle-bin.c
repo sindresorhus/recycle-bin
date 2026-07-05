@@ -9,6 +9,26 @@
 #include <initguid.h>
 #include <shlobj.h>
 
+// Undocumented shell32 export, not in any public header or import library.
+// SHFileOperation calls this internally after every recycle-bin delete
+// to make Explorer refresh the desktop icon and "Empty Recycle Bin" menu
+// state. IFileOperation doesn't reliably trigger the same refresh, so we
+// call it ourselves via GetProcAddress.
+static void updateRecycleBinIcon(void) {
+	HMODULE shell32 = GetModuleHandleW(L"shell32.dll");
+
+	if (shell32 == NULL) {
+		return;
+	}
+
+	typedef HRESULT (WINAPI *SHUpdateRecycleBinIconFunc)(void);
+	SHUpdateRecycleBinIconFunc func = (SHUpdateRecycleBinIconFunc)GetProcAddress(shell32, "SHUpdateRecycleBinIcon");
+
+	if (func != NULL) {
+		func();
+	}
+}
+
 static void printError(HRESULT hr) {
 	wchar_t *message = NULL;
 
@@ -257,6 +277,8 @@ int wmain(int argc, wchar_t **argv) {
 	}
 
 cleanup:
+	updateRecycleBinIcon();
+
 	if (items != NULL) {
 		items->lpVtbl->Release(items);
 	}
